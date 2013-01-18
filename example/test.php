@@ -21,6 +21,4 @@ $d1 = $fiber->db;
 $d2 = $fiber->db;
 
 var_dump($d1, $d2);
-
-
 var_dump($fiber->db, $fiber->dbm(), $fiber->dbm());
