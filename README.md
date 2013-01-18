@@ -60,6 +60,14 @@ $dic->db = $dic->share(function ($dic) {
 });
 ```
 
+or
+
+```php
+$dic->share('db', function ($dic) {
+    return new Database($dic->db_host);
+});
+```
+
 ### Protecting Parameters
 
 ```php
@@ -68,10 +76,30 @@ $dic->save = $dic->protect(function($key, $value){
 })
 ```
 
+or
+
+```php
+$dic->protect('save', function($key, $value){
+    return $_SESSION[$key] = $value;
+})
+```
+
+Get Closure
+
+```php
+$closure = $dic->save;
+```
+
+Use protect function
+
+```php
+$dic->save('test', 'test');
+```
+
 ### Modifying services after creation
 
 ```php
-$dic->extend('db', $fiber->share(function ($db, $dic) {
+$dic->extend('db', $dic->share(function ($db, $dic) {
     $db->select($dic->db_name);
     return $db;
 }));

@@ -19,7 +19,7 @@ class Fiber
      * Add injector
      *
      * @param string   $key
-     * @param \Closure $value
+     * @param Closure  $value
      */
     public function __set($key, $value)
     {
@@ -35,7 +35,7 @@ class Fiber
      */
     public function __get($key)
     {
-        if (isset($this->injectors[$key]) && $this->injectors[$key] instanceof \Closure) {
+        if (isset($this->injectors[$key]) && $this->injectors[$key] instanceof Closure) {
             return $this->injectors[$key]();
         }
 
@@ -66,26 +66,39 @@ class Fiber
     /**
      * Protect the closure
      *
-     * @param callable $closure
-     * @return callable
+     * @param Closure|String $key
+     * @param Closure|String $closure
+     * @return Closure
      */
-    public function protect(Closure $closure)
+    public function protect($key, Closure $closure = null)
     {
-        return function () use ($closure) {
+        if (!$closure) {
+            $closure = $key;
+            $key = false;
+        }
+
+        $func = function () use ($closure) {
             return $closure;
         };
+
+        return $key ? ($this->injectors[$key] = $func) : $func;
     }
 
     /**
      * Share the closure
      *
-     * @param callable $closure
-     * @return callable
+     * @param Closure|string $key
+     * @param Closure|null   $closure
+     * @return Closure
      */
-    public function share(\Closure $closure)
+    public function share($key, Closure $closure = null)
     {
+        if (!$closure) {
+            $closure = $key;
+            $key = false;
+        }
         $that = $this;
-        return function () use ($closure, $that) {
+        $func = function () use ($closure, $that) {
             static $obj;
 
             if ($obj === null) {
@@ -94,17 +107,19 @@ class Fiber
 
             return $obj;
         };
+
+        return $key ? ($this->injectors[$key] = $func) : $func;
     }
 
     /**
      * Extend the injector
      *
-     * @param string   $key
-     * @param callable $closure
-     * @return callable
+     * @param string  $key
+     * @param Closure $closure
+     * @return Closure
      * @throws \InvalidArgumentException
      */
-    public function extend($key, \Closure $closure)
+    public function extend($key, Closure $closure)
     {
         if (!isset($this->injectors[$key])) {
             throw new \InvalidArgumentException(sprintf('Injector "%s" is not defined.', $key));
@@ -112,7 +127,7 @@ class Fiber
 
         $factory = $this->injectors[$key];
 
-        if (!($factory instanceof \Closure)) {
+        if (!($factory instanceof Closure)) {
             throw new \InvalidArgumentException(sprintf('Injector "%s" does not contain an object definition.', $key));
         }
 
@@ -132,7 +147,7 @@ class Fiber
      */
     public function __call($method, $args)
     {
-        if (($closure = $this->$method) instanceof \Closure) {
+        if (($closure = $this->$method) instanceof Closure) {
             return call_user_func_array($closure, $args);
         }
 
@@ -151,6 +166,8 @@ class Fiber
     }
 
     /**
+     * Get all defined
+     *
      * @return array
      */
     public function keys()
