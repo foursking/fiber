@@ -19,7 +19,7 @@ require_once '/path/to/Fiber.php';
 
 ## Usage
 
-```
+```php
 $dic = new Fiber();
 ```
 
@@ -43,12 +43,12 @@ $dic->db_name => 'test';
 ### Defining Services
 
 ```php
-$dic->db = function ($c) {
-    return new Database($c->db_host);
+$dic->db = function ($dic) {
+    return new Database($dic->db_host);
 };
 
 $dic->dbm = function () {
-    return new Database($c->db_host, $db_name);
+    return new Database($dic->db_host, $db_name);
 };
 ```
 
