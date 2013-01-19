@@ -1,9 +1,9 @@
 
 ## Fiber
 
-Fiber is a simple Dependency Injection Container for PHP 5.3 that consists of just one file and one class
+Fiber is a simple `Dependency Injection Container` for PHP 5.3 that consists of just one file and one class
 
-It's imitate [Pimple](https://github.com/fabpot/Pimple), I hate it's ArrayAccess implements
+It's imitate [Pimple](https://github.com/fabpot/Pimple), I don't like it's ArrayAccess Usage
 
 ## Dependencies
 
@@ -47,7 +47,7 @@ $dic->db = function ($dic) {
     return new Database($dic->db_host);
 };
 
-$dic->dbm = function () {
+$dic->dbm = function ($dic) {
     return new Database($dic->db_host, $db_name);
 };
 ```
