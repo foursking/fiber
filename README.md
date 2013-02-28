@@ -17,13 +17,27 @@ Use require file:
 require_once '/path/to/Fiber.php';
 ```
 
+Use [composer](http://getcomposer.org)
+
+```
+"fiber/fiber": "*"
+```
+
+Then
+
+```
+composer.phar install
+```
+
 ## Usage
+
+Create new empty container
 
 ```php
 $dic = new Fiber();
 ```
 
-Create with default injectors
+Create new container with some injectors
 
 ```php
 $dic = new Fiber(array(

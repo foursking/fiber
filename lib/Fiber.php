@@ -59,11 +59,13 @@ class Fiber
      */
     public function __get($key)
     {
-        if (isset($this->injectors[$key]) && $this->injectors[$key] instanceof Closure) {
-            return $this->injectors[$key]();
-        }
+        if (!isset($this->injectors[$key])) throw new \BadMethodCallException('Call to undefined injector ' . __CLASS__ . '::' . $key . '()');
 
-        throw new \BadMethodCallException('Call to undefined injector ' . __CLASS__ . '::' . $key . '()');
+        if ($this->injectors[$key] instanceof Closure) {
+            return $this->injectors[$key]();
+        } else {
+            return $this->injectors[$key];
+        }
     }
 
     /**
