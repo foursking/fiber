@@ -1,43 +1,47 @@
 
-## Fiber
+## Fiber是什么
 
-Fiber is a simple `Dependency Injection Container` for PHP 5.3 that consists of just one file and one class
+Fiber 是一个基于PHP5.3的 `Dependency Injection Container` [介绍](http://www.potstuck.com/2009/01/08/php-dependency-injection/)
 
-It's imitate [Pimple](https://github.com/fabpot/Pimple), I don't like it's ArrayAccess Usage
+Fiber 在一些API上借鉴了 [Pimple](https://github.com/fabpot/Pimple), 但是使用的对象调用方式
 
-## Dependencies
+## 依赖
 
-- php5.3+
+- PHP5.3+
 
-## Install
+## 安装
 
-Use require file:
+### 直接require文件
 
 ```php
 require_once '/path/to/Fiber.php';
 ```
 
-Use [composer](http://getcomposer.org)
+### 使用 [composer](http://getcomposer.org)
+
+添加
 
 ```
 "fiber/fiber": "*"
 ```
 
-Then
+到`composer.json`
+接着安装
 
 ```
 composer.phar install
 ```
 
-## Usage
 
-Create new empty container
+## 使用
+
+创建空的容器
 
 ```php
 $dic = new Fiber();
 ```
 
-Create new container with some injectors
+创建带成员的容器
 
 ```php
 $dic = new Fiber(array(
@@ -45,72 +49,110 @@ $dic = new Fiber(array(
 ));
 ```
 
-## Examples
+## 例子
 
-### Defining Parameters
+### 定义参数
+
+使用对象成员赋值的方式来定义参数
 
 ```php
 $dic->db_host = 'localhost';
 $dic->db_name => 'test';
 ```
 
-### Defining Services
+使用对象成员调用的方式来获取
 
 ```php
-$dic->db = function ($dic) {
-    return new Database($dic->db_host);
+$db_host = $dic->db_host;
+```
+
+### 定义服务
+
+使用对象成员赋值的方式来定义一个匿名函数作为服务
+
+```php
+// $dic也会做为参数传入
+
+$dic->random = function ($dic) {
+    return random();
 };
 
-$dic->dbm = function ($dic) {
-    return new Database($dic->db_host, $db_name);
+$dic->time = function ($dic) {
+    return time();
 };
 ```
 
-### Defining Shared Services
+使用的时候直接调用成员
 
 ```php
+$random = $dic->random;
+$time = $dic->time;
+```
+
+`注意`
+
+> 每次获取成员，函数都会被重新调用，所以不适合做数据库，缓存等需要连接资源的服务
+
+### 定义共享服务
+
+定义共享服务是指对给出的定义单例化，比较适合用来数据库对象等服务
+
+```php
+
+// 标准方式
 $dic->db = $dic->share(function ($dic) {
     return new Database($dic->db_host);
 });
-```
 
-or
-
-```php
+// 键名定义方式
 $dic->share('db', function ($dic) {
     return new Database($dic->db_host);
 });
 ```
 
-### Protecting Parameters
+使用
 
 ```php
+$db = $dic->db;
+
+// 如果重新调用
+
+$db1 = $dic->db // 这时候$db1和$db共享同一个数据库
+```
+
+### 自定义函数
+
+自定义函数允许你配置一个自己可完全控制的函数，函数不会作为服务提供
+
+```php
+
+// 标准定义
 $dic->save = $dic->protect(function($key, $value){
     return $_SESSION[$key] = $value;
 })
-```
 
-or
-
-```php
+// 键名定义
 $dic->protect('save', function($key, $value){
     return $_SESSION[$key] = $value;
 })
 ```
 
-Get Closure
+使用
 
 ```php
-$closure = $dic->save;
+// 获取函数再调用
+$save = $dic->save;
+$save('test', 'value');
+
+// 直接调用
+$dic->save('test', 'value');
 ```
 
-Use protect function
+### 扩展服务
 
-```php
-$dic->save('test', 'test');
-```
+扩展服务允许对现有的服务进行加工，并返回新的服务
 
-### Modifying services after creation
+`注意：只能使用键名的方式进行扩展，如果要想保持共享服务，扩展时也需要使用共享定义`
 
 ```php
 $dic->extend('db', $dic->share(function ($db, $dic) {
